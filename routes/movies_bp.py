@@ -1,4 +1,6 @@
 from flask import Blueprint
+from models.movie import Movie
+from extension import db
 
 HTTP_NOT_FOUND = 404
 
@@ -96,21 +98,29 @@ movies = [
 
 movies_bp = Blueprint("movies_bp",__name__)
 
-@movies_bp.get("/api/movies")
+@movies_bp.get("/")
+def get_all_movies():
+    return movies
+
+@movies_bp.get("/")
 def get_allmovies():
     return(movies)
 
-@movies_bp.get("/api/movies/<id>")
+@movies_bp.get("/<id>")
 def get_movies(id):
-    for movie in movies:
-        if movie["id"] ==id:
-            return movie
-    return {"Message":"Movies Not Found"},404
+    # for movie in movies:
+    #     if movie["id"] ==id:
+    #         return movie
+    # return {"Message":"Movies Not Found"},404
+    data = db.session.get(Movie, id)
+    
+    if not data:
+        return {"Message":"Movies Not Found"},HTTP_NOT_FOUND
+    return data.to_dic()
 
-
-@movies_bp.delete("/api/movies/<id>")
+@movies_bp.delete("/<id>")
 def delete_movie(id):
     for movie in movies:
         if movie["id"] == id:
             movies.remove(movie)
-            return {"data":movie,"message":"Movie Deleted Successfully"}
+            return {"data":movie,"message":"Movie Deleted Successfully"},HTTP_NOT_FOUND
